@@ -43,14 +43,14 @@ run("Set Measurements...", "area limit redirect=None decimal=2"); // General set
 
 // double quantification of collagen and fibrosis  (ordered collagen)
 // the result file "Summary" is a contains the following information
-//Slice
-//Count	Total Area	Average Size	%Area
+// Slice
+// Count	Total Area	Average Size	%Area
 
 
 
 
 // Imagename  		the name of the open image
-// aireCoupe  		the total area of the slice considered analyseable.  	  	
+// aireslice  		the total area of the slice considered analyseable.  	  	
 // aireCollagene  	he surface of the image_base + "collagen" i.e. visible sirius red (membranes)
 // aireFibrose		the surface of the true red fibrosis in polarized light
 // a different file is created for each run
@@ -60,11 +60,11 @@ initialise();
 var image, path, pathR,  image_base, extention_images_base;
 var TimeString;
 var x, y, width, height;
-var coupeMIN, collagenMIN, fibrosisMIN;
+var sliceMIN, collagenMIN, fibrosisMIN;
 var blacksupression, BFr, BFg, BFb, POLAr, POLAg, POLAb;
 
 // filter adjustment to remove small particles 
-coupeMIN=5000;//5000 minimal size µ² for section area
+sliceMIN=5000;//5000 minimal size µ² for section area
 collagenMIN=50;//50 minimal size µ² for section area
 fibrosisMIN=0;// 0 minimal size µ² for section area
 
@@ -101,9 +101,9 @@ pathR = getDirectory("Choose the results folder");
 
 nomDate();// create the date code "TimeString" for the output file name
 print("start of the analysis  : "+TimeString);
-print("Basic parameters of the rejection of the stains :\nMinimum size of the pieces of cut : "+coupeMIN);
-print("minimum size of collagen pieces : "+collagenMIN);//50
-print("minimum size of the fibrosis pieces : "+fibrosisMIN);//0
+print("Basic parameters of the rejection of the stains :\nMinimum size of the parts of cut : "+sliceMIN);
+print("minimum size of collagen parts : "+collagenMIN);//50
+print("minimum size of the fibrosis parts : "+fibrosisMIN);//0
 
 archiveLOG();
 archivesummary();
@@ -115,8 +115,8 @@ list = getFileList(path);
 for (i=0;i<list.length;i++) {
 	if (endsWith(list[i], extention_images_base)){
         image = list[i];
-        image_base=replace(image,extention_images_base,"");// radical des noms
-         //image_base = File.nameWithoutExtension;// nom sans extention oui mais peu se tromper de fichier
+        image_base=replace(image,extention_images_base,"");// name radical 
+         //image_base = File.nameWithoutExtension;// name without extension yes but can be wrong file
         
         print ("image processing : "+image);
         	saveLOG();             
@@ -124,11 +124,11 @@ for (i=0;i<list.length;i++) {
         	saveLOG();  
         ZoI(); // areas of interest to be analyzed
         	saveLOG(); 
-		sauveImages(); // RGB and pola cropped tiff images + cut mask 
+		saveImages(); // RGB and pola cropped tiff images + cut mask 
 			saveLOG(); 		
-		seuillages();
+		thresholdings();
 			saveLOG();
-        sauveResultats();
+        saveResults();
         	saveLOG();   
         	// exit;   
         run("Close All");
@@ -246,42 +246,41 @@ function ZoI(){
 // the section
 	imageCalculator("Add create 32-bit", "A","B");
 	selectWindow("Result of A");
-	rename(image_base +"_coupe");	
+	rename(image_base +"_slice");	
 	run("8-bit");
 	run("Gaussian Blur...", "sigma=4");
 	setAutoThreshold("Otsu dark");
 	run("Convert to Mask");// section white=255 black background=0
     // supression of particles smaller than a minute in size, regardless of their shape
-	run("Analyze Particles...", "size=0-"+coupeMIN+" circularity=0.00-1.00 clear add");
+	run("Analyze Particles...", "size=0-"+sliceMIN+" circularity=0.00-1.00 clear add");
 		roiManager("Deselect");
 		setForegroundColor(0, 0, 0);
 		roiManager("Fill");
 		roiManager("Reset");
 		roiManager("Show All");
-	selectWindow(image_base +"_coupe");// white section=255 black background=0
-	run("Duplicate...", "title=coupeINV");
+	selectWindow(image_base +"_slice");// white section=255 black background=0
+	run("Duplicate...", "title=sliceINV");
 	run("Invert");// black section=0 white background=255
-
-    // creation of a complete image for the suppression of non exploitable zones
+	
+	// creation of a complete image RGB+pola to delete  unuseable zones		
 	selectWindow(image+" - C="+POLAr);
 	run("Red");
-
-	// reduction of polarized areas with strong signals
+		// reduction of polarized areas with strong signals
 	run("Duplicate...", "title=tachesRouges ignore");
 	setAutoThreshold("Triangle dark");
 	run("Create Selection");
 	resetThreshold();
 	setBackgroundColor(0, 0, 0);
 	run("Clear Outside");
+    	
 	selectWindow(image_base+"_RGB");
 	run("Add Image...", "image=tachesRouges x=0 y=0 opacity=75 zero");
 	selectWindow("tachesRouges");
 	close();
 
 	selectWindow(image_base+"_RGB");
-	run("Add Image...", "image=coupeINV x=0 y=0 opacity=100 zero");//zero transparent
-	setTool("freehand");
-	selectWindow("coupeINV");
+	run("Add Image...", "image=sliceINV x=0 y=0 opacity=100 zero");//zero transparent
+	selectWindow("sliceINV");
 	close();
 	roiManager("reset");	
 	roiManager("Show All");
@@ -298,8 +297,9 @@ function ZoI(){
 	    roiManager("Add");	
 	}
 	
+	setTool("freehand");
     waitForUser("2 - areas to exclude :\n Surround then click 't' to add them to the ROI on "+image_base+"_RGB\n THEN click OK");// waits for the person to select an area and click on OK
-	selectWindow(image_base +"_coupe");
+	selectWindow(image_base +"_slice");
 	roiManager("Deselect");
 	roiManager("Fill");
 	roiManager("Reset");
@@ -308,47 +308,50 @@ function ZoI(){
 	run("Select None");
 	run("Select All");
 
-// final area of the section 
-        roisetSAVE(image_base +"_coupe",coupeMIN,"noir");
-		CreateSelection("_coupe");
+// final area of the section slice
+        roisetSAVE(image_base +"_slice",sliceMIN,"noir");
+		CreateSelection("_slice");
 }	
 
 // saved unanalyzed crop images + cut mask
-function sauveImages(){
+function saveImages(){
 	selectWindow(image_base+"_RGB");
 		run("Remove Overlay");
 		run("Select All");
-		run("Duplicate...", "title=sauve1");
+		run("Duplicate...", "title=save1");
 		saveAs("Tiff", pathR+image_base+"_RGB"+".tif");
 		close();
 	selectWindow(image_base +" - POLA");
 		run("Select All");
-		run("Duplicate...", "title=sauve2");
+		run("Duplicate...", "title=save2");
 		saveAs("Tiff", pathR+image_base +"_POLA"+".tif");
 		close();
-	selectWindow(image_base +"_coupe");
+	selectWindow(image_base +"_slice");
 		run("Select All");
-		run("Duplicate...", "title=sauve3");
-		saveAs("Tiff", pathR+image_base+"_masquecoupe"+".tif");
+		run("Duplicate...", "title=save3");
+		saveAs("Tiff", pathR+image_base+"_slicemask"+".tif");
 		close();
 }
 
 // thresholding of the different collagen and fibrosis zones
-function seuillages(){
+function thresholdings(){
 // the collagen
 	selectWindow("A");
 	run("Duplicate...", "title="+image_base +"_collagen");
 	run("Gaussian Blur...", "sigma=3");
 	selectImage(image_base +"_collagen");//plus necessaire mais simplifie la lecture
-	selectSelection("_coupe","_collagen");
-	if(indexOf(image_base, "01sirius")>0){
-		seuil="MaxEntropy dark";
-		}else {
-		seuil="Moments dark";
-	}
-	print(" threshold applied for collagen of "+image_base+" : "+seuil);
-	setAutoThreshold(seuil);
-    //waitForUser("3 - controle du seuillage Moments \nmodifier en MaxEntropy dark pour les sirius01 \npour le collagen");
+	selectSelection("_slice","_collagen");
+	thresholder="Moments dark";
+	
+///// Possibility to introduce this control to chose a different Threshoding methode base on a "tag" text in the picture name exemple: imagetag.lif or image-tag.tif...
+//	if(indexOf(image_base, "tag")>0){
+//		thresholder="MaxEntropy dark";
+//		}else {
+//		thresholder="Moments dark";
+//	}
+	print(" threshold applied for collagen of "+image_base+" : "+thresholder);
+	setAutoThreshold(thresholder);
+    //waitForUser("3 -  theshold controle possible for collagen detection");
 	run("Convert to Mask");
     // collagen area
   		roisetSAVE(image_base +"_collagen",collagenMIN,"noir");
@@ -361,12 +364,12 @@ function seuillages(){
 	run("Convert to Mask");
     // fibrosis area
   		roisetSAVE(image_base +"_fibrosis",fibrosisMIN,"noir");
-	run("Merge Channels...", "c1="+image_base +"_fibrosis c2="+image_base +"_coupe c3="+image_base +"_collagen keep");
+	run("Merge Channels...", "c1="+image_base +"_fibrosis c2="+image_base +"_slice c3="+image_base +"_collagen keep");
 	rename("zones");
 }
 
 // saving results
-function sauveResultats(){
+function saveResults(){
 	selectWindow("Summary");
 	saveAs("Results", pathR+"Summary");
 	selectWindow("zones");
@@ -427,7 +430,7 @@ function selectSelection(planBase,planFinal){
 // initial basic functions
 // besoin de var TimeString, pathR;
 
-// Initialisation
+// Initialization
 function initialise (){	
 	roiManager("Reset");
 	roiManager("Show All");
@@ -443,7 +446,11 @@ function initialise (){
 		selectWindow("Results");
 		run("Close");
 	}
-	;
+	if (isOpen("Log")) {
+		selectWindow("Log");
+		run("Close");
+	}
+//###	;
 }
 
 // date name creation code for output files    
