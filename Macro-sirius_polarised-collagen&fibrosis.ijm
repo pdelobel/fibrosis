@@ -9,7 +9,7 @@
 // inclusion/exclusion sized are based on µm 
 // initial development scaled on human biopsies observed 
 // on a Leica Thunder microscope  with HC PL FLUOTAR    20x/0.55 DRY
-// extention format is based on "lif" images but it can be modified line 30
+// extention format is based on "lif" images but it can be modified in the first macro's lines (around line 55)
 // open order is supposed to be BGR BF and BGR polazised but it can be adjusted in the window interaction
 
 // pictures must be taken BF first then polarised
@@ -26,14 +26,36 @@
 // auto local threshold https://imagej.net/Auto_Local_Threshold (september the 27th 2021)
 //
 
+// double quantification of collagen and fibrosis  (ordered collagen)
+// the result file "Summary+DATE.csv" contains the following columns
+// Slice : Slice name+ interest zone (slice, collagen and fibrosis)
+// Count : unuse : number of ROI
+// Total Area : desired surface measurement in µm²
+// Average Size : unuse 
+// %Area : unuse 
+
+// Files produced :
+// Log.txt  : generic log file it contains steps and crop zone to repeat it if necessary
+// Summary : generic result file to save done work if macro crashes
+// and Each single image file lead to produce serval files aim to control maro's work and correct it if necessary
+// "Imagename"_zones.tif : image image of the identified areas (black represents the exclusion zones, green : analyzed section, cyan : collagen
+// and white : fibrosis)
+// "Imagename"_fibrosis_RoiSet.zip : ROI of all fibrosis spots
+// "Imagename"_collagenselection.roi : selection of all collagen zones in one selection
+// "Imagename"_collagen_RoiSet.zip : ROI of all collagen spots BUT does not save the inner part of the selected areas 
+// "Imagename"_slicemask.tif : binary slice mask
+// "Imagename"_POLA.tif : polarised picture in RGB
+// "Imagename"_RGB.tif : BF picture in RGB
+// "Imagename"_sliceselection.roi : election of all conserved slice parts in one selection
+// "Imagename"_slice_RoiSet.zip : ROI of each slice partswitout user excluded zones
+
+// Imagename  		the name of the open image
+
 /////  It's possible to modified the image extention HERE :
 extention_images_base=".lif";
 
-//run("Threshold...");
-
 //doCommand("Record...");//deleteable
-doCommand("Monitor Memory...");
-//setOption("BlackBackground", true);
+doCommand("Monitor Memory...");//deleteable, it's to know if the computer is out or is computing
 
 // Note: This only works with Black background and White foreground!
 run("Colors...", "foreground=white background=black selection=yellow");
@@ -41,19 +63,6 @@ run("Options...", "iterations=1 black count=1");
 
 run("Set Measurements...", "area limit redirect=None decimal=2"); // General settings
 
-// double quantification of collagen and fibrosis  (ordered collagen)
-// the result file "Summary" is a contains the following information
-// Slice
-// Count	Total Area	Average Size	%Area
-
-
-
-
-// Imagename  		the name of the open image
-// aireslice  		the total area of the slice considered analyseable.  	  	
-// aireCollagene  	he surface of the image_base + "collagen" i.e. visible sirius red (membranes)
-// aireFibrose		the surface of the true red fibrosis in polarized light
-// a different file is created for each run
 initialise();
 
 // definition of fixed variables
@@ -69,7 +78,7 @@ collagenMIN=50;//50 minimal size µ² for section area
 fibrosisMIN=0;// 0 minimal size µ² for section area
 
 Dialog.create("Analysis of polarized "+extention_images_base+" images marked red sirius");
-	Dialog.addMessage("one "+extention_images_base+" image with 6 channels,\n for measuring collagen and fibrosis sirius red marking image in 2 channels RGB direct color and polarized light\n open order of the 6 channels : BGR, BGR");
+	Dialog.addMessage("one "+extention_images_base+" image with 6 channels,\n for measuring collagen and fibrosis sirius red marking image in 2 channels RGB direct color and polarized light\n open order of .lif used for the 6 channels : BGR, BGR\ncan be modified below :");
 
 	Dialog.addNumber("channel imageJ number for\nBF red ?",2);
 	Dialog.addNumber("BF green ?",1);
@@ -78,8 +87,10 @@ Dialog.create("Analysis of polarized "+extention_images_base+" images marked red
 	Dialog.addNumber("pola green ?",4);
 	Dialog.addNumber("pola blue ?",3);
 	Dialog.addNumber("lot of black inoperable patches (1 yes 0 no)",1);
-				
-Dialog.show();
+// Black patches set to 1 is usefull if a large number of black spots are present and the non-photographed areas appear in black.
+// If the image is reduced exclusively to tissue, this correction is not useful because the thresholding will not work sufficiently.
+
+    Dialog.show();
 
 BFr = Dialog.getNumber();
 BFg = Dialog.getNumber();
@@ -343,7 +354,7 @@ function thresholdings(){
 	selectSelection("_slice","_collagen");
 	thresholder="Moments dark";
 	
-///// Possibility to introduce this control to chose a different Threshoding methode base on a "tag" text in the picture name exemple: imagetag.lif or image-tag.tif...
+///// Possibility to introduce this control to chose a different Threshoding methode base on a "tag" text in the Imagename exemple: imagetag.lif or image-tag.tif...
 //	if(indexOf(image_base, "tag")>0){
 //		thresholder="MaxEntropy dark";
 //		}else {
