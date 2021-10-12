@@ -37,7 +37,7 @@
 // Files produced :
 // Log.txt  : generic log file it contains steps and crop zone to repeat it if necessary
 // Summary : generic result file to save done work if macro crashes
-// and Each single image file lead to produce serval files aim to control maro's work and correct it if necessary
+// and Each single image file lead to produce serval files aim to control macro's work and correct it if necessary
 // "Imagename"_zones.tif : image image of the identified areas (black represents the exclusion zones, green : analyzed section, cyan : collagen
 // and white : fibrosis)
 // "Imagename"_fibrosis_RoiSet.zip : ROI of all fibrosis spots
@@ -47,7 +47,7 @@
 // "Imagename"_POLA.tif : polarised picture in RGB
 // "Imagename"_RGB.tif : BF picture in RGB
 // "Imagename"_sliceselection.roi : election of all conserved slice parts in one selection
-// "Imagename"_slice_RoiSet.zip : ROI of each slice partswitout user excluded zones
+// "Imagename"_slice_RoiSet.zip : ROI of each slice parts without user excluded zones
 
 // Imagename  		the name of the open image
 
@@ -73,9 +73,9 @@ var sliceMIN, collagenMIN, fibrosisMIN;
 var blacksupression, BFr, BFg, BFb, POLAr, POLAg, POLAb;
 
 // filter adjustment to remove small particles 
-sliceMIN=5000;//5000 minimal size µ² for section area
-collagenMIN=50;//50 minimal size µ² for section area
-fibrosisMIN=0;// 0 minimal size µ² for section area
+sliceMIN=5000;//5000 µm² minimal size  for section area
+collagenMIN=50;//50 µm² minimal size for collagen detection
+fibrosisMIN=0;// 0 µm² minimal size for fibrosis
 
 Dialog.create("Analysis of polarized "+extention_images_base+" images marked red sirius");
 	Dialog.addMessage("one "+extention_images_base+" image with 6 channels,\n for measuring collagen and fibrosis sirius red marking image in 2 channels RGB direct color and polarized light\n open order of .lif used for the 6 channels : BGR, BGR\ncan be modified below :");
@@ -101,11 +101,11 @@ POLAb = Dialog.getNumber();
 blacksupression = Dialog.getNumber();
 
 
-// choix du répertoire a traiter
+// choice of the directory to be processed
 path = getDirectory("Select the folder containing the "+extention_images_base+" images");
 print("analyzed folder :"+path);
 
-// création du fichier de résultats
+// choice of the results directory
 pathR = getDirectory("Choose the results folder");
 //path + "/analyse_auto/";
 //File.makeDirectory(pathR);
@@ -151,7 +151,7 @@ for (i=0;i<list.length;i++) {
 
 if (isOpen("Summary")) {
 	selectWindow("Summary");
-	saveAs("Results", pathR+"Summary"+TimeString+".csv");
+	saveAs("Results", pathR+"Summary_"+TimeString+".csv");
 }
 if (isOpen("Log")) {
 	selectWindow("Log");
@@ -167,7 +167,7 @@ initialise();
 function canaux(){
 	run("Bio-Formats Importer", "open="+path+image+" autoscale color_mode=Default rois_import=[ROI manager] split_channels view=Hyperstack stack_order=XYCZT  series_1");
 	
-	print("titre de la dernière image ouverte : "+getTitle());
+	print("title of the last opened image : "+getTitle());
 
 // polarized RGB image creation
 	run("Merge Channels...", "c1=["+ image +" - C="+POLAr+"] c2=["+ image +" - C="+POLAg+"] c3=["+ image +" - C="+POLAb+"] keep");// cree RGB
@@ -181,21 +181,22 @@ function canaux(){
 	rename(image_base+"_RGB");
 	cropcrop();
 
+// Black spots detection (always done but there deletion is not obligated)
     selectWindow(image+" - C="+BFr);
     run("Despeckle");
-    run("Scale...", "x=0.5 y=0.5 width=4672 height=3503 interpolation=Bilinear average create title=c2");
+    run("Scale...", "x=0.5 y=0.5 interpolation=Bilinear average create title=c2");
     setAutoThreshold("Otsu");
     run("Convert to Mask");
 
     selectWindow(image+" - C="+BFg);
     run("Despeckle");
-    run("Scale...", "x=0.5 y=0.5 width=4672 height=3503 interpolation=Bilinear average create title=c1");
+    run("Scale...", "x=0.5 y=0.5 interpolation=Bilinear average create title=c1");
     setAutoThreshold("Otsu");
     run("Convert to Mask");
 
     selectWindow(image+" - C="+BFb);
     run("Despeckle");
-    run("Scale...", "x=0.5 y=0.5 width=4672 height=3503 interpolation=Bilinear average create title=c0");
+    run("Scale...", "x=0.5 y=0.5 interpolation=Bilinear average create title=c0");
     setAutoThreshold("Otsu");
     run("Convert to Mask");
 
@@ -217,14 +218,15 @@ function canaux(){
     selectWindow("Result of Result of c0");
     close();
 
-	run("Merge Channels...", "c1=["+ image +" - C="+BFr+"] c2=["+ image +" - C="+BFg+"] c3=["+ image +" - C="+BFb+"] keep");// cree RGB	
+	run("Merge Channels...", "c1=["+ image +" - C="+BFr+"] c2=["+ image +" - C="+BFg+"] c3=["+ image +" - C="+BFb+"] keep");// build RGB	
 	rename(image_base+"_RGB2");
 	
+// image BF LAB creation
 	selectWindow(image_base+"_RGB2");
 	run("Duplicate...", "title=LAB");
 	run("Lab Stack");
 	run("8-bit");
-	run("Split Channels");// cree C1- C2- et C3- LAB
+	run("Split Channels");// build C1- C2- et C3- LAB
 	selectWindow("C1-LAB");
 	rename("L");
 	selectWindow("C2-LAB");
@@ -244,7 +246,7 @@ function cropcrop(){
     waitForUser("1 - Select the slice area on "+image_base+"_RGB THEN click OK");// wait until the person has selected an area and clicked on OK
     
 	getSelectionBounds(x, y, width, height);
-	print("selection informations x, y, width, height:"+x+", "+y+", "+width+", "+height);
+	print("selection informations x, y, width, height: "+x+", "+y+", "+width+", "+height);
 	for (n=1; n<=nImages; n++) {
 			selectImage(n); //select n'th image
 			makeRectangle(x, y, width, height);
@@ -283,7 +285,7 @@ function ZoI(){
 	resetThreshold();
 	setBackgroundColor(0, 0, 0);
 	run("Clear Outside");
-    	
+
 	selectWindow(image_base+"_RGB");
 	run("Add Image...", "image=tachesRouges x=0 y=0 opacity=75 zero");
 	selectWindow("tachesRouges");
@@ -296,7 +298,6 @@ function ZoI(){
 	roiManager("reset");	
 	roiManager("Show All");
 
-	
     // addition in the ROI of the black spots for their suppression
     if(blacksupression==1){
 	    selectWindow("tachesnoires");
@@ -350,7 +351,7 @@ function thresholdings(){
 	selectWindow("A");
 	run("Duplicate...", "title="+image_base +"_collagen");
 	run("Gaussian Blur...", "sigma=3");
-	selectImage(image_base +"_collagen");//plus necessaire mais simplifie la lecture
+	selectImage(image_base +"_collagen");//simply to facilitate reading and searching in the macro 
 	selectSelection("_slice","_collagen");
 	thresholder="Moments dark";
 	
@@ -483,7 +484,7 @@ function nomDate(){
 function archiveLOG(){
 	if(File.exists(pathR+"Log.txt")){
 		File.copy(pathR+"Log.txt", pathR+"Log_before_"+TimeString+".txt") ;
-		print("archive de l'ancien fichier log  : Log_before_"+TimeString+".txt");
+		print("backup of the old file log  : Log_before_"+TimeString+".txt");
 	}
 }
 
@@ -491,7 +492,7 @@ function archiveLOG(){
 function archivesummary(){
 	if(File.exists(pathR+"Summary")){
 		File.copy(pathR+"Summary", pathR+"Summary_before_"+TimeString+".txt") ;
-		print("archive de l'ancien fichier Summary  : Summary_before_"+TimeString+".txt");
+		print("backup of the old file Summary  : Summary_before_"+TimeString+".txt");
 	}
 }
 
