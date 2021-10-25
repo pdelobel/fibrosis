@@ -26,13 +26,13 @@ The heterogeneity of  biopsies sampling led us to consider only the endomysium p
 
 Figure 1 shows the processing from the two images (BF & Polarised) thes analized mask and the result colored alaysis. It's possible to see the automatic hole detection in LAB space and a detection possible of black spots (on the entire folder at the user's discretion).
 
-Figure 1: Image processing [Figure 1](data/analyse.png{ width=100% }  
-A&B part of source image : A in BrightField, B in polarized light, C the mask of all that is retained as "section to be analyzed" in white with suppression of the background, the spots and manually supressed of the perimysium and epimysium zones, and D the representation of the different identified zones (the fibrosis in white, the collagen in cyan and the section in green, on a black background). The scale bar is 500 µm lenght and is about 5000 µm² with it thickness.
+![Figure 1: Image processing](data/analyse.png)Figure 1: Image processing  
+A&B: part of source image: A in BrightField, B in polarized light, C the mask of all that is retained as "section to be analyzed" in white with suppression of the background, the spots and manually supressed of the perimysium and epimysium zones, and D the representation of the different identified zones (the fibrosis in white, the collagen in cyan and the section in green, on a black background). The scale bar is 500 µm lenght and is about 5000 µm² with it thickness.
 
-A situation analysis is presented in figure 2 with two conditions control and cuff, before and after a dry immersion of 5 days,  publication in submition "Severe muscle deconditioning triggers early Extra Cellular Matrix remodeling and residents stem cells fate/behavior" Corentin Guilhot 2021.
+A situation analysis is presented in figure 2 with two conditions control and cuff, before and after a dry immersion of 5 days,  publication submitted "Severe muscle deconditioning triggers early Extra Cellular Matrix remodeling and residents stem cells fate/behavior" Corentin Guilhot 2021.
 
-Figure 2: exemple : Control and cuff at pre and DI5 [Figure 2](data/ctrl-cuff.png{ width=100% }  
-Zoom on a small part of the section for a control subject (A:F) and a cuff subject  (G:L) in pre ( A:C and G:I) and After 5 days of dry immersion DI5 (D:F and J:L) . The images are the brightField, Polarized and the representation of the differents areas identified for each stage.
+![Figure 2: example: Control and cuff at pre and DI5](data/ctrl-cuff.png){width=80%} Figure 2: example: Control and cuff at pre and DI5  
+Zoom on a small part of the section for a control subject (A:F) and a cuff subject (G:L) in pre ( A:C and G:I) and After 5 days of dry immersion DI5 (D:F and J:L) . The images are the brightField, Polarized and the representation of the differents areas identified for each stage (white: fibrosis, cyan: collagen, green : section and black: background and exluded zones).
 
 ### default settings
 
@@ -42,6 +42,8 @@ Images must be scales in µm so the filter adjustment to remove small particles 
 - 5000 µm² minimal size µ² for tissue section area
 - 50 µm² minimal size for collagen detection
 - 0 µm², so no exclusion, for the minimal size of fibrosis
+
+-> centrer<-
 
 ### User interaction
 
@@ -68,9 +70,9 @@ The basic information and traces of the program's progress are recorded in the "
 It contains the following data: 
 
 - start date of the analysis 
-- Basic parameters of the rejection of the stains : Minimum size of the parts of cut : 5000 µm²
-- minimum size of collagen parts : 50 µm²
-- minimum size of the fibrosis parts : 0 µm² (not use)
+- Basic parameters of the rejection of the stains: Minimum size of the parts of cut: 5000 µm²
+- minimum size of collagen parts: 50 µm²
+- minimum size of the fibrosis parts: 0 µm² (not use)
 
 
 After this generals informations, we can found the image specific information as:
@@ -85,7 +87,7 @@ After this generals informations, we can found the image specific information as
 
 ### Open images and slice selection
 
-	Dialog.addMessage("one "+extention_images_base+" image with 6 channels,\n for measuring collagen and fibrosis sirius red marking image in 2 channels RGB direct color and polarized light\n open order of .lif used for the 6 channels : BGR, BGR\ncan be modified below :");
+	Dialog.addMessage("one "+extention_images_base+" image with 6 channels,\n for measuring collagen and fibrosis sirius red marking image in 2 channels RGB direct color and polarized light\n open order of .lif used for the 6 channels: BGR, BGR\ncan be modified below :");
 	
 	The part of usefull image is ask to the user, otherwise the macro works on the whole image. (function cropcrop() resize all opened images)
 
@@ -111,31 +113,31 @@ The detection of fibrosis is the common part determined as "collagen" with a det
 
 To avoid errors, it is the macro that manages all the file records using the name of the starting image as a basis and adding complements. The list of files created is as follows:
 
-- Log.txt  : generic log file it contains steps and crop zone to repeat it if necessary
-- Log+"DATE".csv : is the ultimate log file at the end of a full analysis
-- Summary : generic result file to save done work if macro crashes
+- Log.txt : generic log file it contains steps and crop zone to repeat it if necessary
+- Log+"DATE".csv: is the ultimate log file at the end of a full analysis
+- Summary: generic result file to save done work if macro crashes
 and Each single image file lead to produce serval files aim to control macro's work and correct it if necessary
-- Summary+"DATE".csv : is the ultimate summary file at the end of a full analysis
-- "Imagename"_zones.tif : image image of the identified areas (black represents the exclusion zones, green : analyzed section, cyan : collagen
-and white : fibrosis)
-- "Imagename"_fibrosis_RoiSet.zip : ROI of all fibrosis spots
-- "Imagename"_collagenselection.roi : selection of all collagen zones in one selection
-- "Imagename"_collagen_RoiSet.zip : ROI of all collagen spots BUT does not save the inner part of the selected areas 
-- "Imagename"_slicemask.tif : binary slice mask
-- "Imagename"_POLA.tif : polarised picture in RGB
-- "Imagename"_RGB.tif : BF picture in RGB
-- "Imagename"_sliceselection.roi : election of all conserved slice parts in one selection
-- "Imagename"_slice_RoiSet.zip : ROI of each slice parts without user excluded zones
+- Summary+"DATE".csv: is the ultimate summary file at the end of a full analysis
+- "Imagename"_zones.tif: image image of the identified areas (black represents the exclusion zones, green: analyzed section, cyan: collagen
+and white: fibrosis)
+- "Imagename"_fibrosis_RoiSet.zip: ROI of all fibrosis spots
+- "Imagename"_collagenselection.roi: selection of all collagen zones in one selection
+- "Imagename"_collagen_RoiSet.zip: ROI of all collagen spots BUT does not save the inner part of the selected areas 
+- "Imagename"_slicemask.tif: binary slice mask
+- "Imagename"_POLA.tif: polarised picture in RGB
+- "Imagename"_RGB.tif: BF picture in RGB
+- "Imagename"_sliceselection.roi: election of all conserved slice parts in one selection
+- "Imagename"_slice_RoiSet.zip: ROI of each slice parts without user excluded zones
 
 ### Result file and analysis
 
 The result file "Summary+DATE.csv" contains the following columns:
 
-- Slice : Slice name+ interest zone (slice, collagen and fibrosis)
-- Count : unuse : number of ROI of the interst zone
-- Total Area : desired surface measurement in µm²
-- Average Size : unuse 
-- %Area : unuse 
+- Slice: Slice name+ interest zone (slice, collagen and fibrosis)
+- Count: unuse: number of ROI of the interst zone
+- Total Area: desired surface measurement in µm²
+- Average Size: unuse 
+- %Area: unuse 
 
 The analysis is therefore performed by taking into account the three lines from an image (slice, collagen and fibrosis). The percentage of collagen corresponds to (the surface of collagen divided by the slice)*100. the percentage (the surface of fibrosis divided by the collagen)*100.
 
@@ -147,7 +149,7 @@ Red Picrosirius reference
 
 Images treated by Fiji / ImageJ , open with Bio-Formats and figures done with Scientifig :
 
-- Fiji : ImageJ 1.53f51 Http://imagej.nih.gov/ij Java 1.8.0_172 (64-bit)
+- Fiji: ImageJ 1.53f51 Http://imagej.nih.gov/ij Java 1.8.0_172 (64-bit)
 - Schindelin, Johannes, Ignacio Arganda-Carreras, Erwin Frise, Verena Kaynig, Mark Longair, Tobias Pietzsch, Stephan Preibisch, et al. 2012. « Fiji: an open-source platform for biological-image analysis ». Nature methods 9 (7): 676. https://doi.org/10.1038/nmeth.2019.
 - Aigouy, Benoit, et Vincent Mirouse. 2013. « ScientiFig: a tool to build publication-ready scientific figures ». Nature Methods 10 (11): 1048‑8. https://doi.org/10.1038/nmeth.2692.
 - Linkert, M.; Rueden, C. T.; Allan, C.; Burel, J.-M.; Moore, W.; Patterson, A.; Loranger, B.; Moore, J.; Neves, C.; MacDonald, D.; Tarkowska, A.; Sticco, C.; Hill, E.; Rossner, M.; Eliceiri, K. W. & Swedlow, J. R. (2010), 'Metadata matters: access to image data in the real world', Journal of Cell Biology 189(5), 777--782.

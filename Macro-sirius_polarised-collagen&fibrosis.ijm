@@ -1,8 +1,14 @@
-// pierre Delobel
-// 27/09/2021
+// pierre Delobel (pierre.delobel@inrae.fr)
+// 30/09/2021
 // Macro for red Sirius analysis with twice BVR images Bright Field and Polarised
 // analyze all file with specified extention from a folder
 // specialised for biopsies with manual selection of exclued zones
+
+// Copyright (C) 2021  Pierre DELOBEL for INRAE
+
+// This file is part of the Macro-sirius_polarised-collagen&fibrosis.ijm software. Macro-sirius_polarised-collagen&fibrosis.ijm is free and open source software, distributed under the GNU General Public License v3 (https://www.gnu.org/licenses/gpl-3.0.en.html).
+// This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+// This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY (That is the user must be an expert and know what he does); without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the  GNU General Public License for more details.
 
 // specified informations
 // scale unit are suposed to be set by the microscope
@@ -109,6 +115,7 @@ print("analyzed folder :"+path);
 pathR = getDirectory("Choose the results folder");
 //path + "/analyse_auto/";
 //File.makeDirectory(pathR);
+print("results folder :"+pathR);
 
 nomDate();// create the date code "TimeString" for the output file name
 print("start of the analysis  : "+TimeString);
