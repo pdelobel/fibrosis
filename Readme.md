@@ -23,6 +23,10 @@ Results are saved in one csv tab including 1) area of the region of interest, 2)
 
 The macro allows the user to calculate the % of collagen in the slice and the % of collagen fibrosis from each areas (µm²).
 
+## How install and run
+
+To use this macro, you need the program Fiji (or imageJ + Bio-Formats). The macro must be saved on the computer. Macro-sirius_polarised-collagen&fibrosis.ijm is opened either by opening or by dragging and dropping in the Fiji. To run the macro, just click on "run" from the code window. It is necessary to be particularly careful to let the program run well, which may require more or less time depending on the size of the images and the performance of the computer. The memory usage window is opened to check that the program is running.
+
 ## Operating presentation
 
 ### Reusable structure
